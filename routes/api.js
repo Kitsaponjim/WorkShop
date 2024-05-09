@@ -114,7 +114,7 @@ router.post("/v1/login", async (req, res, next) => {
     const Token = jwt.sign(
       { _id, Username, Role, StatusApprove },
       process.env.TOKEN_KEY,
-      { expiresIn: "10m" }
+      { expiresIn: "1d" }
     );
     return res.status(201).send({
       status: 201,
@@ -132,7 +132,6 @@ router.post("/v1/login", async (req, res, next) => {
 /*-----------------------------แสดงสินค้าทั้งหมด-----------------------------*/
 router.get("/v1/products", verifyToken, async (req, res, next) => {
   try {
-    console.log("gg" + verifyToken);
     let product = await productModel.find();
     return res.status(200).send({
       status: 200,
@@ -150,8 +149,6 @@ router.get("/v1/products", verifyToken, async (req, res, next) => {
 
 /*-----------------------------แสดงสินค้าด้วย id-----------------------------*/
 router.get("/v1/products/:id", verifyToken, async (req, res, next) => {
-  let id = req.params.id;
-  console.log(id);
   try {
     let id = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
