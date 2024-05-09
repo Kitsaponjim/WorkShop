@@ -9,7 +9,7 @@ const Users = require("../models/users.model");
 const productModel = require("../models/products.model");
 const ordersModel = require("../models/orders.model");
 
-/*-----------------------------Approve2-----------------------------*/
+/*-----------------------------Approve-----------------------------*/
 router.put("/v1/approve/:id", checkAdmin, async (req, res, next) => {
   try {
     let { StatusApprove } = req.body;
@@ -52,7 +52,8 @@ router.get("/v1", async function (req, res, next) {
 /*-----------------------------สมัครสมาชิก-----------------------------*/
 router.post("/v1/register", async (req, res, next) => {
   try {
-    const { Username, Password, FirstName, LastName, Role, StatusApprove } = req.body;
+    const { Username, Password, FirstName, LastName, Role, StatusApprove } =
+      req.body;
     const checkUser = await Users.findOne({ Username });
     if (checkUser) {
       return res.status(400).send("User already exist. Please login");
@@ -64,11 +65,18 @@ router.post("/v1/register", async (req, res, next) => {
       FirstName: FirstName,
       LastName: LastName,
       Role: Role,
-      StatusApprove: 0
+      StatusApprove: 0,
     });
     const user = await newUser.save();
     return res.status(200).send({
-      data: { _id: user._id, Username, FirstName, LastName, Role, StatusApprove},
+      data: {
+        _id: user._id,
+        Username,
+        FirstName,
+        LastName,
+        Role,
+        StatusApprove,
+      },
       message: "register success",
       success: true,
     });
@@ -103,7 +111,11 @@ router.post("/v1/login", async (req, res, next) => {
       });
     }
     const { _id, FirstName, LastName, Role, StatusApprove } = user;
-    const Token = jwt.sign({ _id, Username, Role, StatusApprove }, process.env.TOKEN_KEY, {expiresIn: "10m",});
+    const Token = jwt.sign(
+      { _id, Username, Role, StatusApprove },
+      process.env.TOKEN_KEY,
+      { expiresIn: "10m" }
+    );
     return res.status(201).send({
       status: 201,
       message: "เข้าสู่ระบบได้ แต่เข้าไปในใจเธอไม่ได้หรอก",
@@ -118,13 +130,13 @@ router.post("/v1/login", async (req, res, next) => {
 });
 
 /*-----------------------------แสดงสินค้าทั้งหมด-----------------------------*/
-router.get("/v1/products", verifyToken, async (req, res, next) => {   
+router.get("/v1/products", verifyToken, async (req, res, next) => {
   try {
-    console.log("gg"+ verifyToken)
+    console.log("gg" + verifyToken);
     let product = await productModel.find();
     return res.status(200).send({
       status: 200,
-      message: "รับไปซะสินค้าทั้งหมด",
+      message: "Get All Products Success",
       data: product,
     });
   } catch (err) {
