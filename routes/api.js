@@ -32,22 +32,22 @@ router.put("/v1/approve/:id", checkAdmin, async (req, res, next) => {
   }
 });
 
-/*-----------------------------แสดงสมาชิกในระบบ-----------------------------*/
-router.get("/v1", async function (req, res, next) {
-  try {
-    let products = await Users.find();
-    return res.status(200).send({
-      status: 200,
-      message: "success",
-      data: products,
-    });
-  } catch (err) {
-    return res.status(500).send({
-      status: 500,
-      message: "Fails to get",
-    });
-  }
-});
+// /*-----------------------------แสดงสมาชิกในระบบ-----------------------------*/
+// router.get("/v1", async function (req, res, next) {
+//   try {
+//     let products = await Users.find();
+//     return res.status(200).send({
+//       status: 200,
+//       message: "success",
+//       data: products,
+//     });
+//   } catch (err) {
+//     return res.status(500).send({
+//       status: 500,
+//       message: "Fails to get",
+//     });
+//   }
+// });
 
 /*-----------------------------สมัครสมาชิก-----------------------------*/
 router.post("/v1/register", async (req, res, next) => {
@@ -255,29 +255,29 @@ router.get("/v1/orders", verifyToken, async (req, res, next) => {
   }
 });
 
-/*-----------------------------เพิ่มOrder-----------------------------*/
-router.post("/v1/orders", verifyToken, async (req, res, next) => {
-  console.log(req.body);
-  try {
-    const { productId, userId, quantity } = req.body;
-    let newOrder = new ordersModel({
-      productId: productId,
-      userId: userId,
-      quantity: quantity,
-    });
-    let order = await newOrder.save();
-    return res.status(200).send({
-      status: 200,
-      message: "Add Order Success",
-      data: order,
-    });
-  } catch (err) {
-    return res.status(500).send({
-      status: 500,
-      message: "Add Fail",
-    });
-  }
-});
+// /*-----------------------------เพิ่มOrder-----------------------------*/
+// router.post("/v1/orders", verifyToken, async (req, res, next) => {
+//   console.log(req.body);
+//   try {
+//     const { productId, userId, quantity } = req.body;
+//     let newOrder = new ordersModel({
+//       productId: productId,
+//       userId: userId,
+//       quantity: quantity,
+//     });
+//     let order = await newOrder.save();
+//     return res.status(200).send({
+//       status: 200,
+//       message: "Add Order Success",
+//       data: order,
+//     });
+//   } catch (err) {
+//     return res.status(500).send({
+//       status: 500,
+//       message: "Add Fail",
+//     });
+//   }
+// });
 
 /*-----------------------------แสดง Order ของสินค้า-----------------------------*/
 router.get("/v1/products/:id/orders", verifyToken, async (req, res, next) => {
