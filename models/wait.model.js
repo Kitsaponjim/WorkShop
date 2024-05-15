@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Product = require('./products.model');
 const User = require('./users.model');
 
-const ordersSchema = new mongoose.Schema(
+const waitSchema = new mongoose.Schema(
   {
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -15,4 +15,4 @@ const ordersSchema = new mongoose.Schema(
   
 );
 
-module.exports = mongoose.model("Order", ordersSchema);
+module.exports = mongoose.model("Wait", waitSchema);

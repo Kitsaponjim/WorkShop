@@ -8,7 +8,6 @@ var mongoose = require("mongoose");
 const Users = require("../models/users.model");
 const productModel = require("../models/products.model");
 const ordersModel = require("../models/orders.model");
-const waitModel = require("../models/wait.model");
 
 /*-----------------------------Approve-----------------------------*/
 router.put("/v1/approve/:id", checkAdmin, async (req, res, next) => {
@@ -131,7 +130,7 @@ router.post("/v1/login", async (req, res, next) => {
 });
 
 /*-----------------------------แสดงสินค้าทั้งหมด-----------------------------*/
-router.get("/v1/products", async (req, res, next) => {
+router.get("/v1/products", verifyToken, async (req, res, next) => {
   try {
     let product = await productModel.find();
     return res.status(200).send({
@@ -149,7 +148,7 @@ router.get("/v1/products", async (req, res, next) => {
 });
 
 /*-----------------------------แสดงสินค้าด้วย id-----------------------------*/
-router.get("/v1/products/:id",  async (req, res, next) => {
+router.get("/v1/products/:id", verifyToken, async (req, res, next) => {
   try {
     let id = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -159,11 +158,11 @@ router.get("/v1/products/:id",  async (req, res, next) => {
       });
     }
     let product = await productModel.findById(id);
-    const { _id, product_name, amount, price, Type } = product;
+    const { _id, product_name, amount } = product;
     return res.status(200).send({
       status: 200,
       message: "Success",
-      data: { _id, product_name, amount, price, Type },
+      data: { _id, product_name, amount },
     });
   } catch (err) {
     return res.status(500).send({
@@ -174,16 +173,12 @@ router.get("/v1/products/:id",  async (req, res, next) => {
 });
 
 /*-----------------------------เพิ่มสินค้าในระบบ-----------------------------*/
-router.post("/v1/products", async (req, res, next) => {
+router.post("/v1/products", verifyToken, async (req, res, next) => {
   try {
-    const { product_name, amount, price, Type, img} = req.body;
+    const { product_name, amount } = req.body;
     let newProduct = new productModel({
       product_name: product_name,
       amount: amount,
-      price: price,
-      Type: Type,
-      img: img,
-
     });
     let product = await newProduct.save();
     return res.status(200).send({
@@ -200,12 +195,12 @@ router.post("/v1/products", async (req, res, next) => {
 });
 
 /*-----------------------------แก้ไขข้อมูลสินค้า-----------------------------*/
-router.put("/v1/products/:id",  async (req, res, next) => {
+router.put("/v1/products/:id", verifyToken, async (req, res, next) => {
   try {
-    let { product_name, amount , price, Type, img} = req.body;
+    let { product_name, amount } = req.body;
     let update = await productModel.findByIdAndUpdate(
       req.params.id,
-      { product_name, amount , price, Type, img},
+      { product_name, amount },
       { new: true }
     );
     return res.status(200).send({
@@ -222,7 +217,7 @@ router.put("/v1/products/:id",  async (req, res, next) => {
 });
 
 /*-----------------------------ลบสินค้า-----------------------------*/
-router.delete("/v1/products/:id",  async (req, res, next) => {
+router.delete("/v1/products/:id", verifyToken, async (req, res, next) => {
   try {
     let delete_product = await productModel.findByIdAndDelete(req.params.id);
     return res.status(200).send({
@@ -239,11 +234,11 @@ router.delete("/v1/products/:id",  async (req, res, next) => {
 });
 
 /*-----------------------------แสดงOrder-----------------------------*/
-router.get("/v1/orders",  async (req, res, next) => {
+router.get("/v1/orders", verifyToken, async (req, res, next) => {
   try {
     let order = await ordersModel
       .find()
-      .populate("productId")
+      .populate("productId", "product_name")
       .populate("userId", "FirstName")
       .exec();
     return res.status(200).send({
@@ -261,7 +256,7 @@ router.get("/v1/orders",  async (req, res, next) => {
 });
 
 // /*-----------------------------เพิ่มOrder-----------------------------*/
-// router.post("/v1/orders",  async (req, res, next) => {
+// router.post("/v1/orders", verifyToken, async (req, res, next) => {
 //   console.log(req.body);
 //   try {
 //     const { productId, userId, quantity } = req.body;
@@ -284,8 +279,8 @@ router.get("/v1/orders",  async (req, res, next) => {
 //   }
 // });
 
-/*-----------------------------แสดง Order โดยใช้ id สินค้า ของสินค้า-----------------------------*/
-router.get("/v1/products/:id/orders_P",  async (req, res, next) => {
+/*-----------------------------แสดง Order ของสินค้า-----------------------------*/
+router.get("/v1/products/:id/orders", verifyToken, async (req, res, next) => {
   try {
     const productId = req.params.id;
     const orders = await ordersModel
@@ -306,68 +301,8 @@ router.get("/v1/products/:id/orders_P",  async (req, res, next) => {
   }
 });
 
-/*-----------------------------แสดง Order โดยใช้ id user ของสินค้า-----------------------------*/
-router.get("/v1/products/:id/orders",  async (req, res, next) => {
-  try {
-    const Users = req.params.id;
-    const orders = await ordersModel
-      .find({ userId: Users })
-      .populate("productId", "product_name")
-      .populate("userId", "FirstName");
-    return res.status(200).send({
-      status: 200,
-      message: "Get Orders Success",
-      data: orders,
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).send({
-      status: 500,
-      message: "Get Orders Fail",
-    });
-  }
-});
-
-/*-----------------------------เพิ่ม Order ของสินค้า โดยใช้ Product -----------------------------*/
-// router.post("/v1/products/:id/orders_P",  async (req, res) => {
-//   try {
-//     const productId = req.params.id;
-//     const { quantity, userId } = req.body;
-//     const product = await productModel.findById(productId);
-//     /*ตรวจว่าสามารถสั่ง order ได้ไหม */
-//     if (quantity > product.amount) {
-//       return res.status(400).send({
-//         status: 400,
-//         message: "Order มากกว่าของที่มีใน stock ",
-//       });
-//     }
-//     /* แก้ไขค่าของ amount*/
-//     product.amount -= quantity;
-//     totalprice = quantity * product.price
-//     await product.save();
-
-//     const newOrder = new ordersModel({
-//       productId: productId,
-//       quantity: quantity,
-//       userId: userId,
-//       totalprice: totalprice,
-//     });
-//     const order = await newOrder.save();
-//     return res.status(200).send({
-//       status: 200,
-//       message: "Add Order Success",
-//       data: order,
-//     });
-//   } catch (err) {
-//     return res.status(500).send({
-//       status: 500,
-//       message: "Add Order Fail",
-//     });
-//   }
-// });
-
-/*-----------------------------เพิ่ม Order ของสินค้า โดยใช้ Product-----------------------------*/
-router.post("/v1/products/:id/orders",  async (req, res) => {
+/*-----------------------------เพิ่ม Order ของสินค้า-----------------------------*/
+router.post("/v1/products/:id/orders", verifyToken, async (req, res) => {
   try {
     const productId = req.params.id;
     const { quantity, userId } = req.body;
@@ -381,14 +316,12 @@ router.post("/v1/products/:id/orders",  async (req, res) => {
     }
     /* แก้ไขค่าของ amount*/
     product.amount -= quantity;
-    totalprice = quantity * product.price
     await product.save();
 
     const newOrder = new ordersModel({
       productId: productId,
       quantity: quantity,
       userId: userId,
-      totalprice: totalprice,
     });
     const order = await newOrder.save();
     return res.status(200).send({
@@ -403,33 +336,4 @@ router.post("/v1/products/:id/orders",  async (req, res) => {
     });
   }
 });
-
-/*-----------------------------รอเพิ่ม Order ของสินค้า-----------------------------*/
-// router.post("/v1/products/:id/orderswait",  async (req, res) => {
-//   try {
-//     const productId = req.params.id;
-//     const { quantity, userId } = req.body;
-//     const product = await productModel.findById(productId);
-//     totalprice = quantity * product.price
-//     await product.save();
-//     const newOrder = new waitModel({
-//       productId: productId,
-//       quantity: quantity,
-//       userId: userId,
-//       totalprice:totalprice,
-//     });
-//     const order = await newOrder.save();
-//     return res.status(200).send({
-//       status: 200,
-//       message: "Add Order Success",
-//       data: order,
-//     });
-//   } catch (err) {
-//     console.log(err)
-//     return res.status(500).send({
-//       status: 500,
-//       message: "Add Order Fail",
-//     });
-//   }
-// });
 module.exports = router;
