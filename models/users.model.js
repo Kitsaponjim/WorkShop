@@ -6,7 +6,8 @@ const userSchema = mongoose.Schema({
     LastName: { type: String, required: true},
     Role: { type: Number }, // 1 = admin, 0 = user
     StatusApprove: {type: Number}, // 1 = Approved, 0 = not approved
-    Token: { type: String}
+    Token: { type: String},
+    img:{type: String},
   },
   {
     timestamps: true,
